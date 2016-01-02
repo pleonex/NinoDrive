@@ -8,7 +8,7 @@
     <ProjectGuid>{09B523B8-63D6-4A2C-B469-9E5299DE33EA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Ni_no_Drive</RootNamespace>
+    <RootNamespace>NinoDrive</RootNamespace>
     <AssemblyName>Ni no Drive</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -62,7 +62,6 @@
     <Compile Include="GoogleToXML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XmlToGoogle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
