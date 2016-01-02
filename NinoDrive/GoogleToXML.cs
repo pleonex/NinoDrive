@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (C) 2015 zkarts
+// Copyright (C) 2016 pleonex
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

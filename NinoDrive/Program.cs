@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿// Copyright (C) 2015 zkarts
+// Copyright (C) 2016 pleonex
+using System.Windows.Forms;
 using System;
 using Google.GData.Client;
 
