@@ -13,7 +13,14 @@ namespace NinoDrive
 {
     public class GoogleToXML
     {
-        int tabs = 0, blocks = 3, maxDepth = 0, depth = 0, counter = 0;
+        private readonly AuthorizationManager authorization;
+        private SpreadsheetsService ssService;
+
+        int tabs = 0;
+        int blocks = 3;
+        int maxDepth = 0;
+        int depth = 0;
+        int counter = 0;
         string converted = "";
         string[] nodesText;
         List<string[]> ssEntry = new List<string[]>();
@@ -21,22 +28,16 @@ namespace NinoDrive
 
         XmlTextWriter xmlWriter;
 
-        SpreadsheetsService ssService;
-        GOAuth2RequestFactory requestFactory;
-
-        public GoogleToXML(string programName, OAuth2Parameters oauthParams)
+        public GoogleToXML()
         {
-            requestFactory = new GOAuth2RequestFactory(null, programName, oauthParams);
+            authorization = AuthorizationManager.Instance;
+
+            // Create a Spreadsheets Service and give authorization.
+            ssService = new SpreadsheetsService(authorization.ProgramName);
+            authorization.UpdateService(ssService);
         }
 
-        public void PrepareService()
-        {
-            //Create a spredsheetsservice and set its requestfactory
-            ssService = new SpreadsheetsService("NinoDrive-v1");
-            ssService.RequestFactory = requestFactory;
-        }
-
-        public void FromSpreadsheet()
+        public void FromSpreadsheet(string line)
         {
             if (!Directory.Exists("files")) {
                 Directory.CreateDirectory("files");
@@ -46,19 +47,10 @@ namespace NinoDrive
 
             // Make a request to the API and get all spreadsheets.
             SpreadsheetFeed feed;
-
-            Console.WriteLine("Type (a part of) the title of the file you want (case sensitive!)");
-
-            //string desiredFile = Console.ReadLine();
-            string line = Console.ReadLine();
-            if (line == "exit") {
-                Environment.Exit(0);
-            }
-
+            
             query.Title = line.Trim('*');
             query.NumberToRetrieve = 1000;
 
-            ssService.RequestFactory = requestFactory;
             // Refresh the list of spreadsheets.
             feed = ssService.Query(query);
 
