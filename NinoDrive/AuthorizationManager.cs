@@ -21,6 +21,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using Google.GData.Client;
+using System.Net;
 
 namespace NinoDrive
 {
@@ -42,7 +43,6 @@ namespace NinoDrive
             ProgramName = DefaultProgramName;
 
             GetAuthorization();
-            requestFactory = new GOAuth2RequestFactory(null, ProgramName, oauthParams);
         }
 
         public static AuthorizationManager Instance {
@@ -73,7 +73,7 @@ namespace NinoDrive
             // Get the client ID and secret from environment variables for security.
             var clientId = Environment.GetEnvironmentVariable("NINODRIVE_ID") + ClientId;
             var clientSecret = Environment.GetEnvironmentVariable("NINODRIVE_SECRET");
-
+ 
             // Prepare the OAuth params.
             oauthParams = new OAuth2Parameters();
             oauthParams.ClientId = clientId;
@@ -81,26 +81,42 @@ namespace NinoDrive
             oauthParams.RedirectUri = RedirectUri;
             oauthParams.Scope = Scope;
 
-            // Try to get the previous token
+            // Since it's a factory it's safe to continue update OAuthParams.
+            requestFactory = new GOAuth2RequestFactory(null, ProgramName, oauthParams);
+
+            // Try to get the previous token, otherwise request access code.
             if (!ReadTokenFromFile())
                 AskAccessCode();
-            else if (!TestAuthorization())
-                RefreshAuthorization();
         }
 
         private bool ReadTokenFromFile()
         {
+            // We only need to store the latest token and the refresh token.
             throw new NotImplementedException();
         }
 
         private bool TestAuthorization()
         {
-            throw new NotImplementedException();
+            var service = new Google.GData.Spreadsheets.SpreadsheetsService(ProgramName);
+            UpdateService(service);
+
+            bool valid = true;
+            try {
+                service.Query(new Google.GData.Spreadsheets.SpreadsheetQuery());
+            } catch (GDataRequestException) {
+                valid = false;
+            }
+
+            return valid;
         }
 
         private void RefreshAuthorization()
         {
-            OAuthUtil.RefreshAccessToken(oauthParams);
+            try {
+                OAuthUtil.RefreshAccessToken(oauthParams);
+            } catch (WebException) {
+                AskAccessCode();
+            }
         }
 
         private void AskAccessCode()
