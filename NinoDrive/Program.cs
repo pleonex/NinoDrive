@@ -12,7 +12,7 @@ namespace NinoDrive
             var authorization = AuthorizationManager.Instance;
 
             // Get the services and start working.
-            GoogleToXML go = new GoogleToXML();
+            SpreadsheetToXml go = new SpreadsheetToXml();
 
             // Ask for file names.
             bool askStop = false;

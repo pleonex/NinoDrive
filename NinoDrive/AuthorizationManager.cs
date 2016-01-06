@@ -38,7 +38,7 @@ namespace NinoDrive
         private readonly static System.Text.Encoding Encoding = System.Text.Encoding.ASCII;
         private readonly static string AssemblyPath = 
             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        private readonly static string TokenFile = Path.Combine(AssemblyPath, "token.txt");
+        private readonly static string TokenFile = Path.Combine(AssemblyPath, "token");
 
         private static volatile AuthorizationManager instance;
         private static readonly object syncRoot = new object();

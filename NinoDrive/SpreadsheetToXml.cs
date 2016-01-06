@@ -11,10 +11,10 @@ using Google.GData.Spreadsheets;
 
 namespace NinoDrive
 {
-    public class GoogleToXML
+    public class SpreadsheetToXml
     {
         private readonly AuthorizationManager authorization;
-        private SpreadsheetsService ssService;
+        private readonly SpreadsheetsService ssService;
 
         int tabs = 0;
         int blocks = 3;
@@ -28,7 +28,7 @@ namespace NinoDrive
 
         XmlTextWriter xmlWriter;
 
-        public GoogleToXML()
+        public SpreadsheetToXml()
         {
             authorization = AuthorizationManager.Instance;
 
