@@ -95,30 +95,6 @@ namespace NinoDrive
             throw new NotImplementedException();
         }
 
-        private bool TestAuthorization()
-        {
-            var service = new Google.GData.Spreadsheets.SpreadsheetsService(ProgramName);
-            UpdateService(service);
-
-            bool valid = true;
-            try {
-                service.Query(new Google.GData.Spreadsheets.SpreadsheetQuery());
-            } catch (GDataRequestException) {
-                valid = false;
-            }
-
-            return valid;
-        }
-
-        private void RefreshAuthorization()
-        {
-            try {
-                OAuthUtil.RefreshAccessToken(oauthParams);
-            } catch (WebException) {
-                AskAccessCode();
-            }
-        }
-
         private void AskAccessCode()
         {
             // Ask to get the authorization code. Give the URL and ask for the code.
