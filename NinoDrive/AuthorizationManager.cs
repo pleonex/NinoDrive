@@ -89,12 +89,16 @@ namespace NinoDrive
         private void GetAuthorization()
         {
             // Get the client ID and secret from environment variables for security.
-            var clientId = GetSecretVariable("NINODRIVE_ID") + ClientId;
+            var clientId = GetSecretVariable("NINODRIVE_ID");
             var clientSecret = GetSecretVariable("NINODRIVE_SECRET");
+            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)) {
+                Console.WriteLine("ERROR Set NINODRIVE_ID and NINODRIVE_SECRET env vars");
+                Environment.Exit(-1);
+            }
 
             // Prepare the OAuth params.
             oauthParams = new OAuth2Parameters();
-            oauthParams.ClientId = clientId;
+            oauthParams.ClientId = clientId + ClientId;
             oauthParams.ClientSecret = clientSecret;
             oauthParams.RedirectUri = RedirectUri;
             oauthParams.Scope = Scope;
@@ -137,6 +141,10 @@ namespace NinoDrive
 
         private void SaveTokenToFile()
         {
+            if (oauthParams == null || string.IsNullOrEmpty(oauthParams.AccessToken) ||
+                string.IsNullOrEmpty(oauthParams.RefreshToken))
+                return;
+
             string content = MagicTokenWord + '\n' + oauthParams.AccessToken + '\n' +
                              oauthParams.RefreshToken;
             byte[] key  = Encoding.GetBytes(GetSecretVariable("NINODRIVE_SECRET"));
