@@ -22,6 +22,8 @@
 using System;
 using Google.GData.Client;
 using System.Net;
+using System.IO;
+using System.Reflection;
 
 namespace NinoDrive
 {
@@ -31,7 +33,13 @@ namespace NinoDrive
         private const string Scope = "https://spreadsheets.google.com/feeds https://docs.google.com/feeds";
         private const string RedirectUri = "urn:ietf:wg:oauth:2.0:oob";
         private const string DefaultProgramName = "NinoDrive-v1";
-            
+
+        private const string MagicTokenWord = "VELDANA";
+        private readonly static System.Text.Encoding Encoding = System.Text.Encoding.ASCII;
+        private readonly static string AssemblyPath = 
+            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        private readonly static string TokenFile = Path.Combine(AssemblyPath, "token.txt");
+
         private static volatile AuthorizationManager instance;
         private static readonly object syncRoot = new object();
 
@@ -41,8 +49,12 @@ namespace NinoDrive
         private AuthorizationManager()
         {
             ProgramName = DefaultProgramName;
-
             GetAuthorization();
+        }
+
+        ~AuthorizationManager()
+        {
+            SaveTokenToFile();
         }
 
         public static AuthorizationManager Instance {
@@ -68,12 +80,18 @@ namespace NinoDrive
             service.RequestFactory = requestFactory;
         }
 
+        public void InvalidateAuthorization()
+        {
+            File.Delete(TokenFile);
+            GetAuthorization();
+        }
+
         private void GetAuthorization()
         {
             // Get the client ID and secret from environment variables for security.
-            var clientId = Environment.GetEnvironmentVariable("NINODRIVE_ID") + ClientId;
-            var clientSecret = Environment.GetEnvironmentVariable("NINODRIVE_SECRET");
- 
+            var clientId = GetSecretVariable("NINODRIVE_ID") + ClientId;
+            var clientSecret = GetSecretVariable("NINODRIVE_SECRET");
+
             // Prepare the OAuth params.
             oauthParams = new OAuth2Parameters();
             oauthParams.ClientId = clientId;
@@ -89,10 +107,45 @@ namespace NinoDrive
                 AskAccessCode();
         }
 
+        private static string GetSecretVariable(string varName)
+        {
+            // Maybe we could also store them in a json file like Google allows.
+            return Environment.GetEnvironmentVariable(varName);
+        }
+
         private bool ReadTokenFromFile()
         {
-            // We only need to store the latest token and the refresh token.
-            throw new NotImplementedException();
+            if (!File.Exists(TokenFile))
+                return false;
+
+            byte[] data = File.ReadAllBytes(TokenFile);
+            byte[] key  = Encoding.GetBytes(GetSecretVariable("NINODRIVE_SECRET"));
+
+            for (int i = 0; i < data.Length; i++)
+                data[i] ^= key[i % key.Length];
+
+            string[] content = Encoding.GetString(data).Split('\n');
+
+            bool isValid = (content.Length == 3) && (content[0] == MagicTokenWord);
+            if (isValid) {
+                oauthParams.AccessToken  = content[1];
+                oauthParams.RefreshToken = content[2];
+            }
+
+            return isValid;
+        }
+
+        private void SaveTokenToFile()
+        {
+            string content = MagicTokenWord + '\n' + oauthParams.AccessToken + '\n' +
+                             oauthParams.RefreshToken;
+            byte[] key  = Encoding.GetBytes(GetSecretVariable("NINODRIVE_SECRET"));
+            byte[] data = Encoding.GetBytes(content);
+
+            for (int i = 0; i < data.Length; i++)
+                data[i] ^= key[i % key.Length];
+
+            File.WriteAllBytes(TokenFile, data);
         }
 
         private void AskAccessCode()
