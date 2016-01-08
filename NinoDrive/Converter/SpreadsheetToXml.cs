@@ -11,8 +11,6 @@ namespace NinoDrive
 {
     public class SpreadsheetToXml
     {
-        private readonly SpreadsheetsService service;
-
         int tabs = 0;
         int blocks = 3;
         int maxDepth = 0;
@@ -24,11 +22,6 @@ namespace NinoDrive
         //List of lines in arrays split at \t
 
         XmlTextWriter xmlWriter;
-
-        public SpreadsheetToXml()
-        {
-            service = new SpreadsheetsService();
-        }
 
         public void FromSpreadsheet(Spreadsheet spreadsheet)
         {
