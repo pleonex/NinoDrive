@@ -1,6 +1,7 @@
 ﻿// Copyright (C) 2015 zkarts
 // Copyright (C) 2016 pleonex
 using System;
+using System.Linq;
 
 namespace NinoDrive
 {
@@ -12,18 +13,35 @@ namespace NinoDrive
             var authorization = AuthorizationManager.Instance;
 
             // Get the services and start working.
-            SpreadsheetToXml go = new SpreadsheetToXml();
+            var service = new SpreadsheetsService();
 
             // Ask for file names.
-            bool askStop = false;
-            while (!askStop) {
+            while (true) {
+                // Get the requested SpreadhSheet title.
                 Console.Write("Type the file title (\"exit\" to quit)> ");
-
                 string title = Console.ReadLine();
-                askStop = (title == "exit");
+                if (title == "exit")
+                    break;
 
-                if (!askStop)
-                    go.FromSpreadsheet(title);
+                // Search for it
+                var spreadsheets = service.SearchSpreadsheets(title).ToArray();
+
+                // Present the result and if it's not an exact match confirm.
+                Console.WriteLine("\t{0} spreadsheets found:", spreadsheets.Length);
+                foreach (var sheet in spreadsheets)
+                    Console.WriteLine("\t* {0}", sheet.Title);
+
+                // If nothing found, continue
+                if (spreadsheets.Length == 0)
+                    continue;
+
+                // If it's not an exact match, ask if we should continue.
+                if (spreadsheets.Length > 1 || spreadsheets[0].Title != title) {
+                    Console.Write("The title doesn't match exactly. Continue? [Y/N] ");
+                    string reply = Console.ReadLine();
+                    if (reply.ToLower() != "y")
+                        continue;
+                }
             }
         }
     }

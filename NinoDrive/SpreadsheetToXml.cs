@@ -6,15 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using Google.GData.Client;
-using Google.GData.Spreadsheets;
 
 namespace NinoDrive
 {
     public class SpreadsheetToXml
     {
-        private readonly AuthorizationManager authorization;
-        private readonly SpreadsheetsService ssService;
+        private readonly SpreadsheetsService service;
 
         int tabs = 0;
         int blocks = 3;
@@ -30,50 +27,13 @@ namespace NinoDrive
 
         public SpreadsheetToXml()
         {
-            authorization = AuthorizationManager.Instance;
-
-            // Create a Spreadsheets Service and give authorization.
-            ssService = new SpreadsheetsService(authorization.ProgramName);
-            authorization.UpdateService(ssService);
+            service = new SpreadsheetsService();
         }
 
-        public void FromSpreadsheet(string line)
+        public void FromSpreadsheet(Spreadsheet spreadsheet)
         {
-            if (!Directory.Exists("files")) {
-                Directory.CreateDirectory("files");
-            }
-
-            SpreadsheetQuery query = new SpreadsheetQuery();
-
-            // Make a request to the API and get all spreadsheets.
-            SpreadsheetFeed feed;
-            
-            query.Title = line.Trim('*');
-            query.NumberToRetrieve = 1000;
-
-            // Refresh the list of spreadsheets.
-            feed = ssService.Query(query);
-
-            query.Title = line;
-
-            SpreadsheetEntry spreadsheet;
-            List<int> ssIdList = new List<int>();
-
-            //Console.WriteLine(feed.Entries[0].Title.Text + " found");
-            //Console.ReadLine();
-
-            for (int i = 0; i < feed.Entries.Count; i++) {
-                if (feed.Entries[i].Title.Text == query.Title /*desiredFile*/) {
-                    ssIdList.Add(i);
-                    break;
-                }
-                if (query.Title.EndsWith("*") && feed.Entries[i].Title.Text.StartsWith(query.Title.TrimEnd('*'))
-                    || query.Title.StartsWith("*") && feed.Entries[i].Title.Text.EndsWith(query.Title.TrimStart('*')))
-                    ssIdList.Add(i);
-            }
-
             //no exact match
-            if (!ssIdList.Any()) {
+            /*if (!ssIdList.Any()) {
                 while (feed.Entries.All(c => c.Title.Text != query.Title)) {
                     Console.WriteLine("---------------------------------");
                     foreach (AtomEntry s in feed.Entries)
@@ -86,7 +46,7 @@ namespace NinoDrive
                 }
 
                 for (int i = 0; i < feed.Entries.Count; i++) {
-                    if (feed.Entries[i].Title.Text == query.Title /*desiredFile*/) {
+                    if (feed.Entries[i].Title.Text == query.Title ) {
                         ssIdList.Add(i);
                         break;
                     }
@@ -251,7 +211,7 @@ namespace NinoDrive
                 Console.WriteLine("Something went wrong. The requested spreadsheet was not found..." +
                 "\nIf it does exist, try saving it again to refresh the file.");
                 Console.WriteLine("-----------------------------------------");
-            }
+            }*/
         }
 
         public void ConvertXml(string path)
@@ -449,7 +409,7 @@ namespace NinoDrive
         public static string[,] To2DArray<T>(
             this IEnumerable<T> input,
             int rows,
-            int cols) where T : CellEntry
+            int cols) where T : Google.GData.Spreadsheets.CellEntry
         {
             string[,] ret = new string[rows, cols];
             foreach (T t in input) {
