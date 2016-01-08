@@ -19,14 +19,13 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-using System;
-using Google.GData.Client;
-using System.Net;
-using System.IO;
-using System.Reflection;
-
-namespace NinoDrive
+namespace NinoDrive.Spreadsheets
 {
+    using System;
+    using System.IO;
+    using System.Reflection;
+    using Google.GData.Client;
+
     public class AuthorizationManager
     {
         private const string ClientId = ".apps.googleusercontent.com";
