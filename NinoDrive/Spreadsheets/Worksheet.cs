@@ -26,14 +26,20 @@ namespace NinoDrive.Spreadsheets
 
     public class Worksheet
     {
+        private readonly GoogleWorksheetEntry entry;
         private string[,] cells;
 
         internal Worksheet(GoogleWorksheetEntry entry)
         {
-            GetCells(entry);
+            this.entry = entry;
+            GetCells();
         }
 
-        private void GetCells(GoogleWorksheetEntry entry)
+        public string Name {
+            get { return entry.Title.Text; }
+        }
+
+        private void GetCells()
         {
             var feed = entry.QueryCellFeed();
             cells = new string[feed.RowCount.Count, feed.ColCount.Count];

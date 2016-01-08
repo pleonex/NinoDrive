@@ -38,6 +38,13 @@ namespace NinoDrive.Spreadsheets
             get { return entry.Title.Text; }
         }
 
+        public string Key {
+            get {
+                int idx = entry.Id.Uri.Content.LastIndexOf("/") + 1;
+                return entry.Id.Uri.Content.Substring(idx);
+            }
+        }
+
         public Worksheet this[int i] {
             get {
                 if (worksheets[i] == null)

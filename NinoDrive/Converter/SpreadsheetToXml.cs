@@ -21,7 +21,7 @@ namespace NinoDrive.Converter
         List<string[]> ssEntry = new List<string[]>();
         //List of lines in arrays split at \t
 
-        XmlTextWriter xmlWriter;
+        //XmlTextWriter xmlWriter;
 
         public void FromSpreadsheet(Spreadsheet spreadsheet)
         {

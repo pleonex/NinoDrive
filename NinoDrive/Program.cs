@@ -16,6 +16,7 @@ namespace NinoDrive
             // Ask for file names.
             while (true) {
                 // Get the requested SpreadhSheet title.
+                Console.WriteLine();
                 Console.Write("Type the file title (\"exit\" to quit)> ");
                 string title = Console.ReadLine();
                 if (title == "exit")
@@ -28,6 +29,8 @@ namespace NinoDrive
                     continue;
 
                 // TODO: Convert.
+                Console.WriteLine(targetSheet.Key);
+                Console.WriteLine(targetSheet[0].Name);
                 Console.WriteLine(targetSheet[0][2, 4]);
             }
         }
