@@ -51,8 +51,8 @@ namespace NinoDrive.Spreadsheets
             // Give priority to Spreadsheets that matches the title.
             var exactMatch = entries.FirstOrDefault(e => e.Title.Text == title);
             return (exactMatch != null) ? 
-                new[] { new Spreadsheet(this, (GoogleSpreadsheetEntry)exactMatch) } :
-                entries.Select(e => new Spreadsheet(this, (GoogleSpreadsheetEntry)e));
+                new[] { new Spreadsheet((GoogleSpreadsheetEntry)exactMatch) } :
+                entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
         }
     }
 }

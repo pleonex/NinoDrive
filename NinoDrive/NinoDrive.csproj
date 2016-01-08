@@ -67,6 +67,7 @@
     <Compile Include="Spreadsheets\SpreadsheetsService.cs" />
     <Compile Include="Spreadsheets\AuthorizationManager.cs" />
     <Compile Include="Converter\SpreadsheetToXml.cs" />
+    <Compile Include="Spreadsheets\Worksheet.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

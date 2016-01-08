@@ -21,20 +21,31 @@
 namespace NinoDrive.Spreadsheets
 {
     using GoogleSpreadsheetEntry = Google.GData.Spreadsheets.SpreadsheetEntry;
+    using GoogleWorksheetEntry   = Google.GData.Spreadsheets.WorksheetEntry;
 
     public class Spreadsheet
     {
-        private readonly SpreadsheetsService service;
         private readonly GoogleSpreadsheetEntry entry;
+        private readonly Worksheet[] worksheets;
 
-        internal Spreadsheet(SpreadsheetsService service, GoogleSpreadsheetEntry entry)
+        internal Spreadsheet(GoogleSpreadsheetEntry entry)
         {
-            this.service = service;
             this.entry = entry;
+            this.worksheets = new Worksheet[entry.Worksheets.Entries.Count];
         }
 
         public string Title {
             get { return entry.Title.Text; }
+        }
+
+        public Worksheet this[int i] {
+            get {
+                if (worksheets[i] == null)
+                    worksheets[i] =
+                        new Worksheet((GoogleWorksheetEntry)entry.Worksheets.Entries[i]);
+                
+                return worksheets[i];
+            }
         }
     }
 }
