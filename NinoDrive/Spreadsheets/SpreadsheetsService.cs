@@ -20,6 +20,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace NinoDrive.Spreadsheets
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -43,17 +44,31 @@ namespace NinoDrive.Spreadsheets
 
         public IEnumerable<Spreadsheet> SearchSpreadsheets(string title)
         {
-            // Create the query and process it (we can search by StartDate too).
-            var query = new GoogleSpreadsheetQuery {
+            return SearchSpreadsheets(new GoogleSpreadsheetQuery {
                 Title = title,
-                NumberToRetrieve = 1000 };
+                NumberToRetrieve = 1000
+            });
+        }
+
+        public IEnumerable<Spreadsheet> SearchOldSpreadsheets(string title,
+            DateTime startDate)
+        {
+            return SearchSpreadsheets(new GoogleSpreadsheetQuery {
+                Title = title,
+                StartDate = startDate,
+                NumberToRetrieve = 1000 
+            });
+        }
+
+        private IEnumerable<Spreadsheet> SearchSpreadsheets(GoogleSpreadsheetQuery query)
+        {
             var entries = service.Query(query).Entries;
 
             // Give priority to Spreadsheets that matches the title.
-            var exactMatch = entries.FirstOrDefault(e => e.Title.Text == title);
+            var exactMatch = entries.FirstOrDefault(e => e.Title.Text == query.Title);
             return (exactMatch != null) ? 
                 new[] { new Spreadsheet((GoogleSpreadsheetEntry)exactMatch) } :
-                entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
+            entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
         }
 
         public Worksheet RetrieveWorksheet(string sheetKey, string worksheetId)
