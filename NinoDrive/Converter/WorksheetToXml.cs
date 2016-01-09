@@ -28,32 +28,42 @@
 //  SOFTWARE.
 namespace NinoDrive.Converter
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
     using Libgame;
 
     public class WorksheetToXml
     {
-        private const int HeadRow = 1;
-        private const string HeadNodeType = "Node Type";
-
         private readonly Worksheet worksheet;
+        private readonly Dictionary<string, int> textColumnMap;
 
         public WorksheetToXml(Worksheet worksheet)
         {
             this.worksheet = worksheet;
+            this.textColumnMap = new Dictionary<string, int>();
         }
+
+        public int HeadRow { get; set; } = 1;
+        public string HeadNodeType { get; set; } = "Node Type";
+        public IList<string> TextColumns { get; } = new List<string> {
+            "Edited Text", "Translated Text", "Original Text" };
 
         public XDocument Convert()
         {
+            // Find the columns with the translated text.
+            FindTextColumns();
+
+            // Create the XML document.
             var xml = new XDocument();
             xml.Declaration = new XDeclaration("1.0", "utf-8", "true");
 
+            // Create the root element from the content of the second cell.
             var root = new XElement(worksheet[0, 1].Substring("Rootname: ".Length));
             xml.Add(root);
 
-            FindTextColumns();
-
+            // Parse each row.
             ParseRow(root, HeadRow + 1, 0);
             return xml;
         }
@@ -80,7 +90,11 @@ namespace NinoDrive.Converter
         private void FindTextColumns()
         {
             // Find the text columns previously defined.
-            //throw new NotImplementedException();
+            textColumnMap.Clear();
+            for (int i = 0; i < worksheet.Columns; i++) {
+                if (TextColumns.Contains(worksheet[HeadRow, i]))
+                    textColumnMap.Add(worksheet[HeadRow, i], i);
+            }
         }
 
         private bool IsNodeColumn(int row, int column)
@@ -119,8 +133,11 @@ namespace NinoDrive.Converter
         private string GetElementText(int row, int column)
         {
             // Get the text by looking some columns by priority.
-            //throw new NotImplementedException();
-            return worksheet[row, 4].ToXmlString(column + 1, '[', ']');
+            string text = TextColumns
+                .Select(ct => !textColumnMap.ContainsKey(ct) ? null :
+                            worksheet[row, textColumnMap[ct]])
+                .FirstOrDefault(t => !string.IsNullOrEmpty(t));
+            return text?.ToXmlString(column + 1, '[', ']');
         }
     }
 }
