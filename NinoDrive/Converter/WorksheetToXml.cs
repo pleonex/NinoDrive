@@ -39,6 +39,12 @@ namespace NinoDrive.Converter
         private readonly Worksheet worksheet;
         private readonly Dictionary<string, int> textColumnMap;
 
+        static WorksheetToXml()
+        {
+            // Initialize libgame configuration. Needed to set XML string formats.
+            InitializeLibgame();
+        }
+
         public WorksheetToXml(Worksheet worksheet)
         {
             this.worksheet = worksheet;
@@ -148,6 +154,26 @@ namespace NinoDrive.Converter
                             worksheet[row, textColumnMap[ct]])
                 .FirstOrDefault(t => !string.IsNullOrEmpty(t));
             return text?.ToXmlString(column + 1, '[', ']');
+        }
+
+        private static Configuration InitializeLibgame()
+        {
+            // This is totally unnecessary in this case. 
+            // I must change it in the libgame project.
+            var root = new XElement("GameChanges");
+            root.Add(new XElement("RelativePaths"));
+            root.Add(new XElement("CharTables"));
+
+            var specialChars = new XElement("SpecialChars");
+            specialChars.Add(new XElement("Ellipsis"));
+            specialChars.Add(new XElement("QuoteOpen", "\""));
+            specialChars.Add(new XElement("QuoteClose", "\""));
+            specialChars.Add(new XElement("FuriganaOpen", "["));
+            specialChars.Add(new XElement("FuriganaClose", "]"));
+            root.Add(specialChars);
+
+            Configuration.Initialize(new XDocument(root));
+            return Configuration.GetInstance();
         }
     }
 }
