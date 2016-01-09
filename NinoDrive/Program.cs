@@ -113,14 +113,8 @@ namespace NinoDrive
             if (spreadsheets.Length == 1)
                 return spreadsheets[0];
 
-            // If it's not an exact match, ask if we should continue.
-            Console.Write("The title doesn't match exactly. Continue? [Y/n] ");
-            string reply = Console.ReadLine();
-            if (reply.ToLower() == "n")
-                return null;
-
             // And ask for the index.
-            Console.Write("Type the number of the spreadsheet in the list to select: ");
+            Console.Write("Type the number in the list to select (-1 to skip): ");
             int idx = Convert.ToInt32(Console.ReadLine());
             return (idx < 0 || idx >= spreadsheets.Length) ? null : spreadsheets[idx];
         }
