@@ -29,14 +29,28 @@
 namespace NinoDrive
 {
     using System;
+    using System.IO;
     using System.Linq;
+    using System.Reflection;
     using NinoDrive.Spreadsheets;
     using NinoDrive.Converter;
 
     public static class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
+            // Get and create the output directory.
+            string outDir;
+            if (args.Length > 1) { 
+                outDir = args[0];
+            } else {
+                outDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                outDir = Path.Combine(outDir, "output");
+            }
+
+            if (!Directory.Exists(outDir))
+                Directory.CreateDirectory(outDir);
+
             // Get the services and start working.
             var service = new SpreadsheetsService();
 
@@ -64,15 +78,17 @@ namespace NinoDrive
                     continue;
                 }
 
+                name = name.Substring("Filename ".Length);
+
                 // Convert.
-                Console.WriteLine("Converting {0}...", name.Substring("Filename ".Length));
-                var xml = new WorksheetToXml().Convert(worksheet);
+                Console.WriteLine("Converting {0}...", name);
+                var xml = new WorksheetToXml(worksheet).Convert();
 
                 // If it's a subtitle script, the root tag has an attribute with name
                 if (xml.Root.Name == "Subtitle")
                     xml.Root.SetAttributeValue("Name", name);
 
-                // TODO: xml.Save(name + ".xml");
+                xml.Save(Path.Combine(outDir, name + ".xml"));
             }
         }
 

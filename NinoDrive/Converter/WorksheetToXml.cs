@@ -36,11 +36,15 @@ namespace NinoDrive.Converter
         private const int HeadRow = 1;
         private const string HeadNodeType = "Node Type";
 
-        private Worksheet worksheet;
+        private readonly Worksheet worksheet;
 
-        public XDocument Convert(Worksheet worksheet)
+        public WorksheetToXml(Worksheet worksheet)
         {
             this.worksheet = worksheet;
+        }
+
+        public XDocument Convert()
+        {
             var xml = new XDocument();
             xml.Declaration = new XDeclaration("1.0", "utf-8", "true");
 
