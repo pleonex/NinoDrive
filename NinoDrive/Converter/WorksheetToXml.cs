@@ -30,6 +30,7 @@ namespace NinoDrive.Converter
 {
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
+    using Libgame;
 
     public class WorksheetToXml
     {
@@ -69,7 +70,7 @@ namespace NinoDrive.Converter
                 } while (ContainsSubNodes(row, column));
             } else {
                 // Get translation text.
-                parent.Value = GetElementText(row) ?? "";
+                parent.Value = GetElementText(row, column) ?? "";
                 row++;
             }
 
@@ -115,11 +116,11 @@ namespace NinoDrive.Converter
             return new XElement(worksheet[row, column].Split(' ')[0]);
         }
 
-        private string GetElementText(int row)
+        private string GetElementText(int row, int column)
         {
             // Get the text by looking some columns by priority.
             //throw new NotImplementedException();
-            return worksheet[row, 4];
+            return worksheet[row, 4].ToXmlString(column + 1, '[', ']');
         }
     }
 }

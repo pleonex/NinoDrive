@@ -26,6 +26,9 @@
 //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
+using Libgame;
+
+
 namespace NinoDrive
 {
     using System;
@@ -53,6 +56,9 @@ namespace NinoDrive
 
             // Get the services and start working.
             var service = new SpreadsheetsService();
+
+            // Initialize libgame
+            InitializeLibgame();
 
             // Ask for file names.
             while (true) {
@@ -117,6 +123,25 @@ namespace NinoDrive
             Console.Write("Type the number of the spreadsheet in the list to select: ");
             int idx = Convert.ToInt32(Console.ReadLine());
             return (idx < 0 || idx >= spreadsheets.Length) ? null : spreadsheets[idx];
+        }
+
+        private static void InitializeLibgame()
+        {
+            // This is totally unnecessary in this case. 
+            // I must change it in the libgame project.
+            var root = new System.Xml.Linq.XElement("GameChanges");
+            root.Add(new System.Xml.Linq.XElement("RelativePaths"));
+            root.Add(new System.Xml.Linq.XElement("CharTables"));
+
+            var specialChars = new System.Xml.Linq.XElement("SpecialChars");
+            specialChars.Add(new System.Xml.Linq.XElement("Ellipsis"));
+            specialChars.Add(new System.Xml.Linq.XElement("QuoteOpen", "\""));
+            specialChars.Add(new System.Xml.Linq.XElement("QuoteClose", "\""));
+            specialChars.Add(new System.Xml.Linq.XElement("FuriganaOpen", "["));
+            specialChars.Add(new System.Xml.Linq.XElement("FuriganaClose", "]"));
+            root.Add(specialChars);
+
+            Configuration.Initialize(new System.Xml.Linq.XDocument(root));
         }
     }
 }
