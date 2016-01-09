@@ -1,11 +1,11 @@
 ﻿// Copyright (C) 2015 zkarts
 // Copyright (C) 2016 pleonex
-using System;
-using System.Linq;
-using NinoDrive.Spreadsheets;
-
 namespace NinoDrive
 {
+    using System;
+    using System.Linq;
+    using NinoDrive.Spreadsheets;
+
     public static class Program
     {
         public static void Main()

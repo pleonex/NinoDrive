@@ -20,18 +20,19 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace NinoDrive.Spreadsheets
 {
+    using System.Collections.Generic;
     using GoogleSpreadsheetEntry = Google.GData.Spreadsheets.SpreadsheetEntry;
     using GoogleWorksheetEntry   = Google.GData.Spreadsheets.WorksheetEntry;
 
     public class Spreadsheet
     {
         private readonly GoogleSpreadsheetEntry entry;
-        private readonly Worksheet[] worksheets;
+        private readonly Dictionary<int, Worksheet> worksheets;
 
         internal Spreadsheet(GoogleSpreadsheetEntry entry)
         {
             this.entry = entry;
-            this.worksheets = new Worksheet[entry.Worksheets.Entries.Count];
+            this.worksheets = new Dictionary<int, Worksheet>();
         }
 
         public string Title {
@@ -47,9 +48,10 @@ namespace NinoDrive.Spreadsheets
 
         public Worksheet this[int i] {
             get {
-                if (worksheets[i] == null)
-                    worksheets[i] =
-                        new Worksheet((GoogleWorksheetEntry)entry.Worksheets.Entries[i]);
+                if (!worksheets.ContainsKey(i)) {
+                    var workEntry = entry.Worksheets.Entries[i] as GoogleWorksheetEntry;
+                    worksheets[i] = new Worksheet(workEntry);
+                }
                 
                 return worksheets[i];
             }
