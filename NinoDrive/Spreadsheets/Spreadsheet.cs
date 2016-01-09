@@ -31,6 +31,9 @@ namespace NinoDrive.Spreadsheets
 
         internal Spreadsheet(GoogleSpreadsheetEntry entry)
         {
+            // Can't use an array since we don't want to call
+            // entry.Worksheets.Entries.Count since it does a query veery sloooow.
+            // The workaround it's to use a dictionary and get the worksheet when need.
             this.entry = entry;
             this.worksheets = new Dictionary<int, Worksheet>();
         }

@@ -29,9 +29,6 @@ namespace NinoDrive
                     continue;
 
                 // TODO: Convert.
-                Console.WriteLine(targetSheet.Key);
-                Console.WriteLine(targetSheet[0].Name);
-                Console.WriteLine(targetSheet[0][2, 4]);
             }
         }
 

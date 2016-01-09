@@ -27,6 +27,7 @@ namespace NinoDrive.Spreadsheets
     using GoogleSpreadsheetQuery    = Google.GData.Spreadsheets.SpreadsheetQuery;
     using GoogleSpreadsheetFeed     = Google.GData.Spreadsheets.SpreadsheetFeed;
     using GoogleSpreadsheetEntry    = Google.GData.Spreadsheets.SpreadsheetEntry;
+    using GoogleCellQuery           = Google.GData.Spreadsheets.CellQuery;
 
     public class SpreadsheetsService
     {
@@ -53,6 +54,13 @@ namespace NinoDrive.Spreadsheets
             return (exactMatch != null) ? 
                 new[] { new Spreadsheet((GoogleSpreadsheetEntry)exactMatch) } :
                 entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
+        }
+
+        public Worksheet RetrieveWorksheet(string sheetKey, string worksheetId)
+        {
+            var cellQuery = new GoogleCellQuery(sheetKey, worksheetId, "private", "full");
+            var cellFeed = service.Query(cellQuery);
+            return new Worksheet(worksheetId, cellFeed);
         }
     }
 }

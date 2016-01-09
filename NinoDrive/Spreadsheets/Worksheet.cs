@@ -23,25 +23,31 @@ namespace NinoDrive.Spreadsheets
     using System;
     using GoogleWorksheetEntry = Google.GData.Spreadsheets.WorksheetEntry;
     using GoogleCellEntry      = Google.GData.Spreadsheets.CellEntry;
+    using GoogleCellFeed       = Google.GData.Spreadsheets.CellFeed;
 
     public class Worksheet
     {
-        private readonly GoogleWorksheetEntry entry;
         private string[,] cells;
 
         internal Worksheet(GoogleWorksheetEntry entry)
         {
-            this.entry = entry;
-            GetCells();
+            Name = entry.Title.Text;
+            ParseCells(entry.QueryCellFeed());
+        }
+
+        internal Worksheet(string name, GoogleCellFeed feed)
+        {
+            Name = name;
+            ParseCells(feed);
         }
 
         public string Name {
-            get { return entry.Title.Text; }
+            get;
+            private set;
         }
 
-        private void GetCells()
+        private void ParseCells(GoogleCellFeed feed)
         {
-            var feed = entry.QueryCellFeed();
             cells = new string[feed.RowCount.Count, feed.ColCount.Count];
             foreach (GoogleCellEntry cell in feed.Entries)
                 cells[cell.Row - 1, cell.Column - 1] = cell.Value;
