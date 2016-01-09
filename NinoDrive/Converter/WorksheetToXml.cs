@@ -68,6 +68,16 @@ namespace NinoDrive.Converter
             return xml;
         }
 
+        private void FindTextColumns()
+        {
+            // Find the text columns previously defined.
+            textColumnMap.Clear();
+            for (int i = 0; i < worksheet.Columns; i++) {
+                if (TextColumns.Contains(worksheet[HeadRow, i]))
+                    textColumnMap.Add(worksheet[HeadRow, i], i);
+            }
+        }
+
         private int ParseRow(XElement parent, int row, int column)
         {
             if (IsNodeColumn(row, column)) {
@@ -85,16 +95,6 @@ namespace NinoDrive.Converter
             }
 
             return row;
-        }
-
-        private void FindTextColumns()
-        {
-            // Find the text columns previously defined.
-            textColumnMap.Clear();
-            for (int i = 0; i < worksheet.Columns; i++) {
-                if (TextColumns.Contains(worksheet[HeadRow, i]))
-                    textColumnMap.Add(worksheet[HeadRow, i], i);
-            }
         }
 
         private bool IsNodeColumn(int row, int column)
@@ -126,8 +126,18 @@ namespace NinoDrive.Converter
         private XElement CreateNode(int row, int column)
         {
             // In the row you can find the name and all the attributes.
-            //throw new NotImplementedException();
-            return new XElement(worksheet[row, column].Split(' ')[0]);
+            string[] nodeData = worksheet[row, column].Split(' ');
+            var node = new XElement(nodeData[0]);
+
+            // Process attributes.
+            foreach (var attr in nodeData.Skip(1)) {
+                string[] attrData = attr.Split('=');
+                node.SetAttributeValue(
+                    attrData[0],
+                    attrData[1].Substring(1, attrData[1].Length - 2)); // Remove quotes
+            }
+
+            return node;
         }
 
         private string GetElementText(int row, int column)
