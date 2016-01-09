@@ -68,7 +68,7 @@ namespace NinoDrive.Spreadsheets
             var exactMatch = entries.FirstOrDefault(e => e.Title.Text == query.Title);
             return (exactMatch != null) ? 
                 new[] { new Spreadsheet((GoogleSpreadsheetEntry)exactMatch) } :
-            entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
+                entries.Select(e => new Spreadsheet((GoogleSpreadsheetEntry)e));
         }
 
         public Worksheet RetrieveWorksheet(string sheetKey, string worksheetId)
