@@ -31,6 +31,7 @@ namespace NinoDrive
     using System;
     using System.Linq;
     using NinoDrive.Spreadsheets;
+    using NinoDrive.Converter;
 
     public static class Program
     {
@@ -54,7 +55,24 @@ namespace NinoDrive
                 if (targetSheet == null)
                     continue;
 
-                // TODO: Convert.
+                // Check that it's a valid spreadsheet by comparing the name
+                // All the converted XML are written into the first worksheet.
+                var worksheet = targetSheet[0];
+                var name = worksheet[0, 0]; // Written into the first cell.
+                if (string.IsNullOrEmpty(name) || !name.StartsWith("Filename ")) {
+                    Console.WriteLine("Invalid spreadsheet name. Please verify it.");
+                    continue;
+                }
+
+                // Convert.
+                Console.WriteLine("Converting {0}...", name.Substring("Filename ".Length));
+                var xml = new WorksheetToXml().Convert(worksheet);
+
+                // If it's a subtitle script, the root tag has an attribute with name
+                if (xml.Root.Name == "Subtitle")
+                    xml.Root.SetAttributeValue("Name", name);
+
+                // TODO: xml.Save(name + ".xml");
             }
         }
 

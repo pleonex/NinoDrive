@@ -53,6 +53,14 @@ namespace NinoDrive.Spreadsheets
             private set;
         }
 
+        public int Rows {
+            get { return cells.GetLength(0); }
+        }
+
+        public int Columns {
+            get { return cells.GetLength(1); }
+        }
+
         private void ParseCells(GoogleCellFeed feed)
         {
             cells = new string[feed.RowCount.Count, feed.ColCount.Count];
@@ -62,10 +70,10 @@ namespace NinoDrive.Spreadsheets
 
         public string this[int row, int col] {
             get {
-                if (row < 0 || row >= cells.GetLength(0))
+                if (row < 0 || row >= Rows)
                     throw new ArgumentOutOfRangeException("row");
 
-                if (col < 0 || col >= cells.GetLength(1))
+                if (col < 0 || col >= Columns)
                     throw new ArgumentOutOfRangeException("col");
 
                 return cells[row, col];

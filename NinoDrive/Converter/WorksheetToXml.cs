@@ -31,12 +31,16 @@ namespace NinoDrive.Converter
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Xml;
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
 
     public class WorksheetToXml
     {
+        private const int HeadRow = 1;
+        private const string HeadNodeType = "Node Type";
+
+        private Worksheet worksheet;
+
         int tabs = 0;
         int blocks = 3;
         int maxDepth = 0;
@@ -45,44 +49,86 @@ namespace NinoDrive.Converter
         string converted = "";
         string[] nodesText;
         List<string[]> ssEntry = new List<string[]>();
-        //List of lines in arrays split at \t
 
-        //XmlTextWriter xmlWriter;
-
-        public void FromSpreadsheet(Worksheet worksheet)
+        private void FindTextColumns()
         {
-            /*
-            WorksheetEntry worksheet = (WorksheetEntry)wsFeed.Entries[0];
-            CellQuery cellQuery = new CellQuery(worksheet.CellFeedLink);
-            CellFeed cellFeed = ssService.Query(cellQuery);
+            // Find the text columns previously defined.
+            //throw new NotImplementedException();
+        }
 
-            int rows = cellFeed.RowCount.IntegerValue;
-            int cols = cellFeed.ColCount.IntegerValue;
+        private bool IsNodeColumn(int row, int column)
+        {
+            return worksheet[HeadRow, column] == HeadNodeType &&
+                !string.IsNullOrEmpty(worksheet[row, column]);
+        }
 
-            var values = (from entry in cellFeed.Entries
-                                         let selectableEntry = entry as CellEntry
-                                         orderby selectableEntry.Row, selectableEntry.Column ascending
-                                         select selectableEntry).To2DArray(
-                             rows,
-                             cols);
+        private XElement CreateNode(int row, int column)
+        {
+            // In the row you can find the name and all the attributes.
+            //throw new NotImplementedException();
+            return new XElement(worksheet[row, column].Split(' ')[0]);
+        }
 
-            if (values[0, 0] == null || !values[0, 0].Contains("Filename")) {
-                Console.WriteLine("ERROR: Filename corrupted. Please reset the filename in the top-left column.");
-                Console.WriteLine("---------------------------------");
-                return;
+        private string GetElementText(int row)
+        {
+            // Get the text by looking some columns by priority.
+            //throw new NotImplementedException();
+            return worksheet[row, 4];
+        }
+
+        private bool ContainsSubNodes(int row, int column)
+        {
+            // If there are no more rows, finish.
+            if (row >= worksheet.Rows)
+                return false;
+
+            // If it's the first column continue until reach the end.
+            if (column == 0)
+                return true;
+
+            // Otherwise check if all the parent columns/cells are null. This 
+            // happens when they are merged cells. If some of them contains a value,
+            // it means that the parent has changed so there isn't more subnodes.
+            for (int c = column - 1; c >= 0; c--)
+                if (worksheet[row, c] != null)
+                    return false;
+
+            return true;
+        }
+
+        private int ParseRow(XElement parent, int row, int column)
+        {
+            if (IsNodeColumn(row, column)) {
+                do {
+                    // If it's a node column, go to the next level.
+                    XElement node = CreateNode(row, column);
+                    parent.Add(node);
+
+                    row = ParseRow(node, row, column + 1);
+                } while (ContainsSubNodes(row, column));
+            } else {
+                // Get translation text.
+                parent.Value = GetElementText(row) ?? "";
+                row++;
             }
-            Console.WriteLine("Making file " + values[0, 0].Substring(9) + "...");
-            xmlWriter = new XmlTextWriter(".\\files\\" + values[0, 0].Substring(9) + ".xml",
-                System.Text.Encoding.UTF8);
-            xmlWriter.Formatting = Formatting.Indented;
-            xmlWriter.Indentation = 2;
-            xmlWriter.IndentChar = ' ';
 
-            xmlWriter.WriteStartDocument();
-            xmlWriter.WriteStartElement(values[0, 1].Substring(10));
-            if (values[0, 1].Substring(10) == "Subtitle")
-                xmlWriter.WriteAttributeString("Name", values[0, 0].Substring(9));
+            return row;
+        }
 
+        public XDocument Convert(Worksheet worksheet)
+        {
+            this.worksheet = worksheet;
+            var xml = new XDocument();
+            xml.Declaration = new XDeclaration("1.0", "utf-8", "true");
+
+            var root = new XElement(worksheet[0, 1].Substring("Rootname: ".Length));
+            xml.Add(root);
+
+            FindTextColumns();
+
+            ParseRow(root, HeadRow + 1, 0);
+            return xml;
+            /*
             uint translatedColumn = 0;
             for (uint i = 0; i < cols; i++) {
                 if (values[1, i] == "Translated Text") {
@@ -270,15 +316,15 @@ namespace NinoDrive.Converter
         public string CheckDepth(XElement xel)
         {
             string returnTabs = "";
-            int checkDepth = 0;
-            while (xel.FirstNode != null && xel.FirstNode.NodeType != XmlNodeType.Text) {
-                xel = (XElement)xel.FirstNode;
-                checkDepth++;
-            }
-            for (int num = maxDepth - (depth + checkDepth); num > 0; num--) {
-                returnTabs += "\t";
-                tabs++;
-            }
+//            int checkDepth = 0;
+//            while (xel.FirstNode != null && xel.FirstNode.NodeType != XmlNodeType.Text) {
+//                xel = (XElement)xel.FirstNode;
+//                checkDepth++;
+//            }
+//            for (int num = maxDepth - (depth + checkDepth); num > 0; num--) {
+//                returnTabs += "\t";
+//                tabs++;
+//            }
             return returnTabs;
         }
 
@@ -357,7 +403,7 @@ namespace NinoDrive.Converter
 
             content += line;
             line = "";
-            if (xel.FirstNode != null && xel.FirstNode.NodeType != XmlNodeType.Text) {
+            if (xel.FirstNode != null) {//&& xel.FirstNode.NodeType != XmlNodeType.Text) {
                 xel = (XElement)xel.FirstNode;
                 depth++;
                 if (converted == "" || called)
