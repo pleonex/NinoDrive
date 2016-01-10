@@ -33,27 +33,58 @@ namespace NinoDrive.CLI
 {
     public static class ModimeConfigurationGenerator
     {
-        public static void UpdateConfiguration(string fileInfoPath, string editInfoPath)
+        public static void UpdateSearching(string fileInfoPath, string editInfoPath)
         {
             // Get the service.
             var service = new SpreadsheetsService();
 
             // Update first the file info since we don't need the spreadsheets for this.
-            UpdateFileInfo(fileInfoPath);
+            var scriptFiles = UpdateFileInfo(fileInfoPath);
 
             // Retrieve all the spreadsheets and update the edit info.
             int start = 0;
-            var spreadsheets = service.SearchSpreadsheets("", start).ToList();
+            var spreadsheets = service.SearchSpreadsheets("", start)
+                .Select(s => new SpreadsheetData(s)).ToList();
             do {
-                UpdateEditInfo(editInfoPath, spreadsheets);
+                UpdateEditInfo(editInfoPath, spreadsheets, scriptFiles);
 
                 start += SpreadsheetsService.MaxResults;
-                spreadsheets = service.SearchSpreadsheets("", start).ToList();
+                spreadsheets = service.SearchSpreadsheets("", start)
+                    .Select(s => new SpreadsheetData(s)).ToList();
             } while (spreadsheets.Count > 0);
         }
 
-        private static void UpdateFileInfo(string fileInfoPath)
+        public static void UpdateWithSpreadsheet(string fileInfoPath, string editInfoPath,
+            string keySpreadsheet, string worksheetId)
         {
+            // Get the service.
+            var service = new SpreadsheetsService();
+
+            // Update first the file info since we don't need the spreadsheets for this.
+            var scriptFiles = UpdateFileInfo(fileInfoPath);
+
+            // Get all the info from spreadsheet parsing the spreadsheet keyed.
+            var keys = service.RetrieveWorksheet(keySpreadsheet, worksheetId);
+            var spreadsheets = new List<SpreadsheetData>(keys.Rows);
+            for (int r = 0; r < keys.Rows; r++) {
+                int keyCol = -2;
+                for (int c = 0; c < keys.Columns && keyCol == -2; c++)
+                    if (string.IsNullOrEmpty(keys[r, c]))
+                        keyCol = c - 1;
+
+                if (keyCol < 0)
+                    continue;
+
+                spreadsheets.Add(new SpreadsheetData(keys[r, keyCol - 1], keys[r, keyCol]));
+            }
+
+            UpdateEditInfo(editInfoPath, spreadsheets, scriptFiles);
+        }
+
+        private static IList<string> UpdateFileInfo(string fileInfoPath)
+        {
+            var scriptFiles = new List<string>();
+
             // Open the configuration file info.
             var doc = XDocument.Load(fileInfoPath);
             var root = doc.Root;
@@ -70,13 +101,16 @@ namespace NinoDrive.CLI
                 scriptInfo.Add(new XElement("Type", "GDrive.Spreadsheet.Script"));
                 scriptInfo.Add(new XElement("DependsOn", path));
                 xmlInfo.AddAfterSelf(scriptInfo);
+
+                scriptFiles.Add(path);
             }
             doc.Save(fileInfoPath);
+
+            return scriptFiles;
         }
 
-        private static void UpdateEditInfo(
-            string editInfoPath,
-            IList<Spreadsheet> spreadsheets)
+        private static void UpdateEditInfo(string editInfoPath,
+            IList<SpreadsheetData> spreadsheets, IList<string> scriptFiles)
         {
             // Open the configuration file info.
             var doc = XDocument.Load(editInfoPath);
@@ -84,7 +118,7 @@ namespace NinoDrive.CLI
             foreach (var xmlInfo in root.Element("Files").Elements("File")) {
                 // If it's not a Nino script ignore
                 string path = xmlInfo.Element("Path").Value;
-                if (!path.Contains("ROM/data/map/script/") || !path.EndsWith(".bin"))
+                if (!scriptFiles.Contains(path))
                     continue;
 
                 // Search spreadsheet with the same name
@@ -106,6 +140,24 @@ namespace NinoDrive.CLI
                 xmlInfo.AddBeforeSelf(scriptInfo);
             }
             doc.Save(editInfoPath);
+        }
+
+        private class SpreadsheetData
+        {
+            public SpreadsheetData(string title, string key)
+            {
+                Title = title;
+                Key = key;
+            }
+
+            public SpreadsheetData(Spreadsheet spreadsheet)
+            {
+                Title = spreadsheet.Title;
+                Key = spreadsheet.Key;
+            }
+
+            public string Title { get; private set; }
+            public string Key { get; private set; }
         }
     }
 }

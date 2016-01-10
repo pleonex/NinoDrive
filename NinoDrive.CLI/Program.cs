@@ -41,9 +41,13 @@ namespace NinoDrive.CLI
         {
             // Check if the argument is to update config files
             if (args.Length == 3 && args[0] == "-u") {
-                ModimeConfigurationGenerator.UpdateConfiguration(args[1], args[2]);
+                ModimeConfigurationGenerator.UpdateSearching(args[1], args[2]);
                 return;
-            } 
+            } else if (args.Length == 5 && args[0] == "-u") {
+                ModimeConfigurationGenerator.UpdateWithSpreadsheet(args[1], args[2],
+                    args[3], args[4]);
+                return;
+            }
 
             // Get and create the output directory.
             string outDir;
