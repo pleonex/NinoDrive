@@ -49,21 +49,25 @@ namespace NinoDrive.Spreadsheets
             authorization.UpdateService(service);
         }
 
-        public IEnumerable<Spreadsheet> SearchSpreadsheets(string title)
+        public static int MaxResults {
+            get { return 500; }
+        }
+
+        public IEnumerable<Spreadsheet> SearchSpreadsheets(string title, int offset)
         {
             return SearchSpreadsheets(new GoogleSpreadsheetQuery {
                 Title = title,
-                NumberToRetrieve = 1000
+                StartIndex = offset
             });
         }
 
-        public IEnumerable<Spreadsheet> SearchOldSpreadsheets(string title,
+        public IEnumerable<Spreadsheet> SearchOldSpreadsheets(string title, int offset,
             DateTime startDate)
         {
             return SearchSpreadsheets(new GoogleSpreadsheetQuery {
                 Title = title,
+                StartIndex = offset,
                 StartDate = startDate,
-                NumberToRetrieve = 1000 
             });
         }
 

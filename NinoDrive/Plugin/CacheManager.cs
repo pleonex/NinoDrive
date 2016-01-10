@@ -64,7 +64,7 @@ namespace NinoDrive.Plugin
         private void GetUpdatedFiles()
         {
             updatedSheets = new List<Spreadsheet>(
-                service.SearchOldSpreadsheets("", filterDate));
+                service.SearchOldSpreadsheets("", 0, filterDate));
         }
 
         private void CheckUpdateFitler()

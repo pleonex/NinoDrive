@@ -50,8 +50,8 @@ namespace NinoDrive.Plugin
         public override void Initialize(GameFile file, params object[] parameters)
         {
             var paramTag = parameters[0] as XElement;
-            spreadsheetKey = paramTag.Element("key").Value;
-            worksheetId = paramTag.Element("worksheetId").Value;
+            spreadsheetKey = paramTag.Element("Key").Value;
+            worksheetId = paramTag.Element("WorksheetId").Value;
 
             service = new SpreadsheetsService();
             cache = CacheManager.Instance;

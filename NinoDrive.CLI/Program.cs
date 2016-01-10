@@ -39,6 +39,12 @@ namespace NinoDrive.CLI
     {
         public static void Main(string[] args)
         {
+            // Check if the argument is to update config files
+            if (args.Length == 3 && args[0] == "-u") {
+                ModimeConfigurationGenerator.UpdateConfiguration(args[1], args[2]);
+                return;
+            } 
+
             // Get and create the output directory.
             string outDir;
             if (args.Length > 1) { 
@@ -64,7 +70,7 @@ namespace NinoDrive.CLI
                     break;
 
                 // Search for it
-                var spreadsheets = service.SearchSpreadsheets(title).ToArray();
+                var spreadsheets = service.SearchSpreadsheets(title, 0).ToArray();
                 var targetSheet = SelectSpreadsheet(spreadsheets);
                 if (targetSheet == null)
                     continue;
