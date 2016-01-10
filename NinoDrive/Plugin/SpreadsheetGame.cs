@@ -25,6 +25,7 @@
 // THE SOFTWARE.
 namespace NinoDrive.Plugin
 {
+    using System;
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
     using NinoDrive.Converter;
@@ -44,7 +45,7 @@ namespace NinoDrive.Plugin
         private CacheManager cache;
 
         public override string FormatName {
-            get { return "GDrive.Spreadsheet.Script"; }
+            get { return "GDrive.Spreadsheet"; }
         }
 
         public override void Initialize(GameFile file, params object[] parameters)
@@ -62,11 +63,15 @@ namespace NinoDrive.Plugin
         public override void Read(DataStream strIn)
         {
             // We don't need to read nothing from the game or previous files.
+            // IgnorePath should be set to true because this is a virtual file.
+            // In this case this shouldn't be called.
+            throw new NotSupportedException();
         }
 
         public override void Write(DataStream strOut)
         {
-            // We don't need to write nothing.
+            // Same as read method.
+            throw new NotSupportedException();
         }
 
         public override void Import(params DataStream[] strIn)

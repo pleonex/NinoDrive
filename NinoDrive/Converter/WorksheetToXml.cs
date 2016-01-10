@@ -30,6 +30,7 @@ namespace NinoDrive.Converter
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
     using Libgame;
@@ -132,15 +133,24 @@ namespace NinoDrive.Converter
         private XElement CreateNode(int row, int column)
         {
             // In the row you can find the name and all the attributes.
-            string[] nodeData = worksheet[row, column].Split(' ');
+            string[] nodeData = worksheet[row, column].Split(new[] {' '}, 2);
             var node = new XElement(nodeData[0]);
 
-            // Process attributes.
-            foreach (var attr in nodeData.Skip(1)) {
-                string[] attrData = attr.Split('=');
-                node.SetAttributeValue(
-                    attrData[0],
-                    attrData[1].Substring(1, attrData[1].Length - 2)); // Remove quotes
+            if (nodeData.Length == 1)
+                return node;
+
+            var attributes = nodeData[1];
+            int nextEqual = attributes.IndexOf("=", 0);
+            while (nextEqual != -1) {
+                int start = attributes.LastIndexOf(" ", nextEqual) + 1;
+                var name = attributes.Substring(start, nextEqual - start);
+
+                int end = attributes.IndexOf("\"", nextEqual + 2);
+                var value = attributes.Substring(nextEqual + 2, end - nextEqual - 2);
+
+                node.SetAttributeValue(name, value);
+
+                nextEqual = attributes.IndexOf("=", end);
             }
 
             return node;
