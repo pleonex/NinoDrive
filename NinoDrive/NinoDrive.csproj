@@ -72,8 +72,8 @@
     <Compile Include="Spreadsheets\AuthorizationManager.cs" />
     <Compile Include="Spreadsheets\Worksheet.cs" />
     <Compile Include="Converter\WorksheetToXml.cs" />
-    <Compile Include="Converter\SpreadsheetGame.cs" />
-    <Compile Include="Converter\CacheManager.cs" />
+    <Compile Include="Plugin\CacheManager.cs" />
+    <Compile Include="Plugin\SpreadsheetGame.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -89,5 +89,6 @@
   <ItemGroup>
     <Folder Include="Spreadsheets\" />
     <Folder Include="Converter\" />
+    <Folder Include="Plugin\" />
   </ItemGroup>
 </Project>
