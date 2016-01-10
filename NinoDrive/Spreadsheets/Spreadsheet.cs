@@ -27,6 +27,7 @@
 //  SOFTWARE.
 namespace NinoDrive.Spreadsheets
 {
+    using System;
     using System.Collections.Generic;
     using GoogleSpreadsheetEntry = Google.GData.Spreadsheets.SpreadsheetEntry;
     using GoogleWorksheetEntry   = Google.GData.Spreadsheets.WorksheetEntry;
@@ -54,6 +55,10 @@ namespace NinoDrive.Spreadsheets
                 int idx = entry.Id.Uri.Content.LastIndexOf("/") + 1;
                 return entry.Id.Uri.Content.Substring(idx);
             }
+        }
+
+        public DateTime Updated {
+            get { return entry.Updated; }
         }
 
         public Worksheet this[int i] {
