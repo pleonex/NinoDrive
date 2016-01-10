@@ -73,6 +73,7 @@
     <Compile Include="Spreadsheets\Worksheet.cs" />
     <Compile Include="Converter\WorksheetToXml.cs" />
     <Compile Include="Converter\SpreadsheetGame.cs" />
+    <Compile Include="Converter\CacheManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -23,12 +23,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using NinoDrive.Spreadsheets;
-
-
 namespace NinoDrive.Converter
 {
     using System.Xml.Linq;
+    using NinoDrive.Spreadsheets;
     using Libgame;
     using Libgame.IO;
     using Mono.Addins;
@@ -42,6 +40,7 @@ namespace NinoDrive.Converter
         private string spreadsheetKey;
         private string worksheetId;
         private SpreadsheetsService service;
+        private CacheManager cache;
 
         public override string FormatName {
             get { return "GDrive.Spreadsheet.Script"; }
@@ -54,6 +53,7 @@ namespace NinoDrive.Converter
             worksheetId = paramTag.Element("worksheetId").Value;
 
             service = new SpreadsheetsService();
+            cache = CacheManager.Instance;
 
             base.Initialize(file, parameters);
         }
@@ -68,8 +68,12 @@ namespace NinoDrive.Converter
             // We don't need to write nothing.
         }
 
-        public override void Import(DataStream[] strIn)
+        public override void Import(params DataStream[] strIn)
         {
+            // If the cache does not contain this key, it meas we don't have to update.
+            if (!cache.Contains(spreadsheetKey))
+                return;
+
             // Get the worksheet from GDrive.
             var worksheet = service.RetrieveWorksheet(spreadsheetKey, worksheetId);
 
@@ -83,7 +87,7 @@ namespace NinoDrive.Converter
             importedXml.Save(this.ImportedPaths[0]);
         }
 
-        public override void Export(DataStream[] strOut)
+        public override void Export(params DataStream[] strOut)
         {
             // Here we would export the XML to GDrive.
         }
