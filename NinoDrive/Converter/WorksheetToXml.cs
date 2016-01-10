@@ -156,8 +156,11 @@ namespace NinoDrive.Converter
             return text?.ToXmlString(column + 1, '[', ']');
         }
 
-        private static Configuration InitializeLibgame()
+        private static void InitializeLibgame()
         {
+            if (Configuration.IsInitialized())
+                return;
+
             // This is totally unnecessary in this case. 
             // I must change it in the libgame project.
             var root = new XElement("GameChanges");
@@ -173,7 +176,6 @@ namespace NinoDrive.Converter
             root.Add(specialChars);
 
             Configuration.Initialize(new XDocument(root));
-            return Configuration.GetInstance();
         }
     }
 }
