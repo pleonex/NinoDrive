@@ -33,14 +33,14 @@ namespace NinoDrive.CLI
 {
     public static class ModimeConfigurationGenerator
     {
-        public static void UpdateWithSpreadsheet(string fileInfoPath, string editInfoPath,
+        public static void UpdateWithSpreadsheet(string editInfoPath,
             string keySpreadsheet, string worksheetId)
         {
             // Get the service.
             var service = new SpreadsheetsService();
 
             // Get all the info from spreadsheet parsing the spreadsheet with keys.
-            Console.WriteLine("Downloading spreadsheet...");
+            Console.WriteLine("Downloading spreadsheet");
             var keys = service.RetrieveWorksheet(keySpreadsheet, worksheetId);
             var spreadsheets = new List<SpreadsheetData>(keys.Rows);
             for (int r = 0; r < keys.Rows; r++) {
@@ -64,7 +64,7 @@ namespace NinoDrive.CLI
                 spreadsheets.Add(new SpreadsheetData(name, key));
             }
 
-            Console.WriteLine("Update edit info...");
+            Console.WriteLine("Updating edit info");
             UpdateEditInfo(editInfoPath, spreadsheets);
         }
 
@@ -81,15 +81,20 @@ namespace NinoDrive.CLI
                 if (spreadsheet == null)
                     continue;
 
+                // Get the output file from the import file
+                var output = xmlInfo.Elements("Import")
+                    .Single(e => e.Value.EndsWith(".xml"))
+                    .Value;
+
                 // For each script, create a new file type to parse the parsed script.
                 var scriptInfo = new XElement("VirtualFile");
                 scriptInfo.Add(new XComment("Spreadsheet for: " + path));
                 scriptInfo.Add(new XElement("InternalFilter", "false"));
                 scriptInfo.Add(new XElement("Type", "GDrive.Spreadsheet"));
-                scriptInfo.Add(xmlInfo.Elements("Import").Where(e => e.Value.EndsWith(".xml")));
                 var parameters = new XElement("Parameters");
                 parameters.Add(new XElement("Key", spreadsheet.Key));
-                parameters.Add(new XElement("WorksheetId", "od6")); // 0 ID
+                parameters.Add(new XElement("WorksheetId", "od6")); // Must be first one.
+                parameters.Add(new XElement("Output", output));
                 scriptInfo.Add(parameters);
                 xmlInfo.AddBeforeSelf(scriptInfo);
             }

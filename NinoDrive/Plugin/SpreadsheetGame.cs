@@ -26,6 +26,7 @@
 namespace NinoDrive.Plugin
 {
     using System;
+    using System.IO;
     using System.Xml.Linq;
     using NinoDrive.Spreadsheets;
     using NinoDrive.Converter;
@@ -41,6 +42,7 @@ namespace NinoDrive.Plugin
     {
         private string spreadsheetKey;
         private string worksheetId;
+        private string output;
         private SpreadsheetsService service;
         private CacheManager cache;
 
@@ -53,6 +55,8 @@ namespace NinoDrive.Plugin
             var paramTag = parameters[0] as XElement;
             spreadsheetKey = paramTag.Element("Key").Value;
             worksheetId = paramTag.Element("WorksheetId").Value;
+            output = Configuration.GetInstance().ResolvePath(
+                paramTag.Element("Output").Value);
 
             service = new SpreadsheetsService();
             cache = CacheManager.Instance;
@@ -86,11 +90,9 @@ namespace NinoDrive.Plugin
             // Convert to XML
             var importedXml = new WorksheetToXml(worksheet).Convert();
 
-            // Save the XML, since this format will be imported first than the script.
-            // The script will read this override XML. We need first to dispose it.
-            // This is not a safe operation to dispose from here, but should work atm.
-            strIn[0].Dispose();
-            importedXml.Save(this.ImportedPaths[0]);
+            // Save to the path creating the directory if needed.
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            importedXml.Save(output);
         }
 
         public override void Export(params DataStream[] strOut)
