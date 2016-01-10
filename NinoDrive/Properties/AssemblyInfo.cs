@@ -39,9 +39,6 @@ using Mono.Addins;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: ComVisible(false)]
-[assembly: Guid("52ae7702-e5cc-43a2-ad7e-6490170d9572")]
-
 [assembly: AssemblyVersion("2.0.0.*")]
 
 [assembly: Addin]
