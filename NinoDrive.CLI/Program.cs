@@ -40,12 +40,11 @@ namespace NinoDrive.CLI
         public static void Main(string[] args)
         {
             // Check if the argument is to update config files
-            if (args.Length == 3 && args[0] == "-u") {
-                ModimeConfigurationGenerator.UpdateSearching(args[1], args[2]);
-                return;
-            } else if (args.Length == 5 && args[0] == "-u") {
+            if (args.Length == 5 && args[0] == "-u") {
+                Console.WriteLine("Starting modime config updater.");
                 ModimeConfigurationGenerator.UpdateWithSpreadsheet(args[1], args[2],
                     args[3], args[4]);
+                Console.WriteLine("Done");
                 return;
             }
 

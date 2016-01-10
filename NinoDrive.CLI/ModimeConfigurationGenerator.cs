@@ -33,40 +33,18 @@ namespace NinoDrive.CLI
 {
     public static class ModimeConfigurationGenerator
     {
-        public static void UpdateSearching(string fileInfoPath, string editInfoPath)
-        {
-            // Get the service.
-            var service = new SpreadsheetsService();
-
-            // Update first the file info since we don't need the spreadsheets for this.
-            var scriptFiles = UpdateFileInfo(fileInfoPath);
-
-            // Retrieve all the spreadsheets and update the edit info.
-            int start = 0;
-            var spreadsheets = service.SearchSpreadsheets("", start)
-                .Select(s => new SpreadsheetData(s)).ToList();
-            do {
-                UpdateEditInfo(editInfoPath, spreadsheets, scriptFiles);
-
-                start += SpreadsheetsService.MaxResults;
-                spreadsheets = service.SearchSpreadsheets("", start)
-                    .Select(s => new SpreadsheetData(s)).ToList();
-            } while (spreadsheets.Count > 0);
-        }
-
         public static void UpdateWithSpreadsheet(string fileInfoPath, string editInfoPath,
             string keySpreadsheet, string worksheetId)
         {
             // Get the service.
             var service = new SpreadsheetsService();
 
-            // Update first the file info since we don't need the spreadsheets for this.
-            var scriptFiles = UpdateFileInfo(fileInfoPath);
-
-            // Get all the info from spreadsheet parsing the spreadsheet keyed.
+            // Get all the info from spreadsheet parsing the spreadsheet with keys.
+            Console.WriteLine("Downloading spreadsheet...");
             var keys = service.RetrieveWorksheet(keySpreadsheet, worksheetId);
             var spreadsheets = new List<SpreadsheetData>(keys.Rows);
             for (int r = 0; r < keys.Rows; r++) {
+                // Search the last non-null column.
                 int keyCol = -2;
                 for (int c = 0; c < keys.Columns && keyCol == -2; c++)
                     if (string.IsNullOrEmpty(keys[r, c]))
@@ -75,71 +53,69 @@ namespace NinoDrive.CLI
                 if (keyCol < 0)
                     continue;
 
-                spreadsheets.Add(new SpreadsheetData(keys[r, keyCol - 1], keys[r, keyCol]));
+                // The previous non-null column is the key and the previous previous name.
+                string name = keys[r, keyCol - 1];
+                string key = keys[r, keyCol];
+
+                // Special case for tutorial, say below.
+                if (name.StartsWith("Tut0"))
+                    name = "Tutorial_" + name.Substring(3, 2) + "/" + name.Substring(6, 2);
+
+                spreadsheets.Add(new SpreadsheetData(name, key));
             }
 
-            UpdateEditInfo(editInfoPath, spreadsheets, scriptFiles);
-        }
-
-        private static IList<string> UpdateFileInfo(string fileInfoPath)
-        {
-            var scriptFiles = new List<string>();
-
-            // Open the configuration file info.
-            var doc = XDocument.Load(fileInfoPath);
-            var root = doc.Root;
-            foreach (var xmlInfo in root.Element("Files").Elements("FileInfo")) {
-                // If it's not a Nino script ignore
-                string type = xmlInfo.Element("Type").Value;
-                if (type != "Ninokuni.Script")
-                    continue;
-
-                // For each script, create a new file type to parse the parsed script.
-                string path = xmlInfo.Element("Path").Value;
-                var scriptInfo = new XElement("FileInfo");
-                scriptInfo.Add(new XElement("Path", path + "/script"));
-                scriptInfo.Add(new XElement("Type", "GDrive.Spreadsheet.Script"));
-                scriptInfo.Add(new XElement("DependsOn", path));
-                xmlInfo.AddAfterSelf(scriptInfo);
-
-                scriptFiles.Add(path);
-            }
-            doc.Save(fileInfoPath);
-
-            return scriptFiles;
+            Console.WriteLine("Update edit info...");
+            UpdateEditInfo(editInfoPath, spreadsheets);
         }
 
         private static void UpdateEditInfo(string editInfoPath,
-            IList<SpreadsheetData> spreadsheets, IList<string> scriptFiles)
+            IList<SpreadsheetData> spreadsheets)
         {
             // Open the configuration file info.
             var doc = XDocument.Load(editInfoPath);
             var root = doc.Root;
             foreach (var xmlInfo in root.Element("Files").Elements("File")) {
-                // If it's not a Nino script ignore
-                string path = xmlInfo.Element("Path").Value;
-                if (!scriptFiles.Contains(path))
-                    continue;
-
                 // Search spreadsheet with the same name
-                string name = path.Substring(path.LastIndexOf('/') + 1);
-                name = name.Substring(0, name.LastIndexOf("."));
-                var spreadsheet = spreadsheets.FirstOrDefault(s => s.Title == name);
+                string path = xmlInfo.Element("Path").Value;
+                var spreadsheet = SearchSpreadsheet(spreadsheets, path);
                 if (spreadsheet == null)
                     continue;
 
                 // For each script, create a new file type to parse the parsed script.
-                var scriptInfo = new XElement("File");
-                scriptInfo.Add(new XElement("Path", path + "/script"));
+                var scriptInfo = new XElement("VirtualFile");
+                scriptInfo.Add(new XComment("Spreadsheet for: " + path));
                 scriptInfo.Add(new XElement("InternalFilter", "false"));
-                scriptInfo.Add(xmlInfo.Element("Import"));
+                scriptInfo.Add(new XElement("Type", "GDrive.Spreadsheet"));
+                scriptInfo.Add(xmlInfo.Elements("Import").Where(e => e.Value.EndsWith(".xml")));
                 var parameters = new XElement("Parameters");
                 parameters.Add(new XElement("Key", spreadsheet.Key));
-                parameters.Add(new XElement("WorksheetId", "od6")); // This is the ID of 0
+                parameters.Add(new XElement("WorksheetId", "od6")); // 0 ID
                 scriptInfo.Add(parameters);
                 xmlInfo.AddBeforeSelf(scriptInfo);
             }
+
             doc.Save(editInfoPath);
+        }
+
+        private static SpreadsheetData SearchSpreadsheet(
+            IList<SpreadsheetData> spreadsheets, string path)
+        {
+            // Get the name of the game file.
+            // Special case for tutorials, we keep the previous folder since the files
+            // has common names 00.bin, 01.bin accross folders.
+            int idx = path.Contains("Tutorial_") ? path.Length - 8 : path.Length - 1;
+            string name = path.Substring(path.LastIndexOf('/', idx) + 1);
+
+            // Remove extension if any (except for .sq files...).
+            if (name.Contains(".") && !name.EndsWith(".sq"))
+                name = name.Substring(0, name.LastIndexOf("."));
+
+            if (name == "ARM9" || name.StartsWith("Overlay"))
+                name = name.ToLower();
+
+            // Search spreadsheet with the same name
+            var sp = spreadsheets.FirstOrDefault(s => s.Title == name);
+            return sp;
         }
 
         private class SpreadsheetData
