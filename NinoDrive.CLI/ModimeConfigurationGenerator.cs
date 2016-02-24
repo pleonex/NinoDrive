@@ -44,18 +44,14 @@ namespace NinoDrive.CLI
             var keys = service.RetrieveWorksheet(keySpreadsheet, worksheetId);
             var spreadsheets = new List<SpreadsheetData>(keys.Rows);
             for (int r = 0; r < keys.Rows; r++) {
-                // Search the last non-null column.
-                int keyCol = -2;
-                for (int c = 0; c < keys.Columns && keyCol == -2; c++)
-                    if (string.IsNullOrEmpty(keys[r, c]))
-                        keyCol = c - 1;
-
-                if (keyCol < 0)
+                // If the path is null, skip.
+                if (string.IsNullOrEmpty(keys[r, 0]))
                     continue;
 
-                // The previous non-null column is the key and the previous previous name.
-                string name = keys[r, keyCol - 1];
-                string key = keys[r, keyCol];
+                // The first column is the path and the second the key
+                string path = keys[r, 0];
+                string name = path.Substring(path.LastIndexOf("\\") + 1);
+                string key = keys[r, 1];
 
                 // Special case for tutorial, say below.
                 if (name.StartsWith("Tut0"))
