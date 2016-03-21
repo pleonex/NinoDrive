@@ -162,7 +162,7 @@ namespace NinoDrive.Converter
                 .Select(ct => !textColumnMap.ContainsKey(ct) ? null :
                             worksheet[row, textColumnMap[ct]])
                 .FirstOrDefault(t => !string.IsNullOrEmpty(t));
-            return text?.ToXmlString(column + 1, '[', ']');
+            return text?.ToXmlString(column + 1, '【', '】');
         }
 
         private static void InitializeLibgame()
@@ -180,8 +180,8 @@ namespace NinoDrive.Converter
             specialChars.Add(new XElement("Ellipsis"));
             specialChars.Add(new XElement("QuoteOpen", "\""));
             specialChars.Add(new XElement("QuoteClose", "\""));
-            specialChars.Add(new XElement("FuriganaOpen", "["));
-            specialChars.Add(new XElement("FuriganaClose", "]"));
+            specialChars.Add(new XElement("FuriganaOpen", "【"));
+            specialChars.Add(new XElement("FuriganaClose", "】"));
             root.Add(specialChars);
 
             Configuration.Initialize(new XDocument(root));
