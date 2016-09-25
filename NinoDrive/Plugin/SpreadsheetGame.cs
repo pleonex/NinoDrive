@@ -85,7 +85,15 @@ namespace NinoDrive.Plugin
                 return;
 
             // Get the worksheet from GDrive.
-            var worksheet = service.RetrieveWorksheet(spreadsheetKey, worksheetId);
+            Worksheet worksheet;
+            try {
+                worksheet = service.RetrieveWorksheet(spreadsheetKey, worksheetId);
+            } catch (Google.GData.Client.GDataRequestException) {
+                // Capture errors since if there isn't Internet connection
+                // we don't want to abort the process.
+                Console.WriteLine("ERROR: Can't get spreadhseet {0}", spreadsheetKey);
+                return;
+            }
 
             // Convert to XML
             var importedXml = new WorksheetToXml(worksheet).Convert();

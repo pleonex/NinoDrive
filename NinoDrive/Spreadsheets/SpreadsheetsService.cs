@@ -73,7 +73,13 @@ namespace NinoDrive.Spreadsheets
 
         private IEnumerable<Spreadsheet> SearchSpreadsheets(GoogleSpreadsheetQuery query)
         {
-            var entries = service.Query(query).Entries;
+            Google.GData.Client.AtomEntryCollection entries;
+            try {
+                entries = service.Query(query).Entries;
+            } catch (Google.GData.Client.GDataRequestException ex) {
+                Console.WriteLine(ex);
+                return new List<Spreadsheet>();
+            }
 
             // Give priority to Spreadsheets that matches the title.
             var exactMatch = entries.FirstOrDefault(e => e.Title.Text == query.Title);
